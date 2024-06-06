@@ -1,0 +1,90 @@
+name: Waynes Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      destroy:
+        description: 'Set to true to destroy infrastructure'
+        required: false
+        default: 'false'
+        type: string
+
+jobs:
+  terraform:
+    name: 'Terraform Plan and Apply'
+    runs-on: ubuntu-latest
+    if: github.event.inputs.destroy != 'true'
+    strategy:
+      matrix:
+        environment: [dev, prod]
+
+    env:
+      ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+      ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.8.4
+
+    - name: ssh
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
+
+    - name: Terraform Init
+      working-directory: ./environments/${{ matrix.environment }}
+      run: terraform init -backend-config=backend.tf
+
+    - name: Terraform Plan
+      if: github.ref != 'refs/heads/main'
+      working-directory: ./environments/${{ matrix.environment }}
+      run: terraform plan -var-file=terraform.tfvars -out=plan.out
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      working-directory: ./environments/${{ matrix.environment }}
+      run: terraform apply -var-file=terraform.tfvars -auto-approve
+
+  destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+    if: github.event.inputs.destroy == 'true' && github.ref == 'refs/heads/main'
+
+    env:
+      ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+      ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.8.4
+
+    - name: ssh
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve
