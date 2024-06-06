@@ -46,7 +46,7 @@ jobs:
 
     - name: Terraform Init
       working-directory: ./environments/${{ matrix.environment }}
-      run: terraform init -backend-config=backend.tf
+      run: terraform init -backend-config=backend.conf
 
     - name: Terraform Plan
       if: github.ref != 'refs/heads/main'
