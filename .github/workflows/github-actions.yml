@@ -15,7 +15,7 @@ on:
         default: 'false'
         type: string
       env:
-        description: 'Set the environment to destroy'
+        description: 'Set the environment to destroy (dev or prod)'
         required: false
         default: 'dev'
         type: string
