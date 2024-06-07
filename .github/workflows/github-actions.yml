@@ -40,24 +40,21 @@ jobs:
         terraform_version: 1.8.4
 
     - name: Get environment location
-      run: echo "/environments/${{ matrix.environment }}"
+      run: echo "/environments/${{ matrix.environment }}/*"
 
     - name: ssh
       uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
 
-    # - name: Terraform Init
-    #   working-directory: ./environments/${{ matrix.environment }}
-    #   run: terraform init -backend-config=backend.conf
     - name: Terraform Init
       working-directory: ./
       run: terraform init -backend-config=./environments/${{ matrix.environment }}/backend.conf
 
     - name: Terraform Plan
       if: github.ref != 'refs/heads/main'
-      working-directory: ./environments/${{ matrix.environment }}
-      run: terraform plan -var-file=terraform.tfvars -out=plan.out
+      working-directory: ./
+      run: terraform plan -var-file=./environments/${{ matrix.environment }}/terraform.tfvars -out=plan.out
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
