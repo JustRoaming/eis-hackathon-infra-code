@@ -39,6 +39,9 @@ jobs:
       with:
         terraform_version: 1.8.4
 
+    - name: Get environment location
+      run: echo "/environments/${{ matrix.environment }}"
+
     - name: ssh
       uses: webfactory/ssh-agent@v0.9.0
       with:
