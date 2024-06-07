@@ -14,6 +14,11 @@ on:
         required: false
         default: 'false'
         type: string
+      env:
+        description: 'Set the environment to destroy'
+        required: false
+        default: 'dev'
+        type: string
 
 jobs:
   terraform:
@@ -40,7 +45,8 @@ jobs:
         terraform_version: 1.8.4
 
     - name: Get Matrix Environment Location
-      run: echo "./environments/${{ matrix.environment }}"
+      #run: echo "./environments/${{ matrix.environment }}"
+      run: echo "${{ github.event.inputs.destroy }}"
 
     - name: ssh
       uses: webfactory/ssh-agent@v0.9.0
