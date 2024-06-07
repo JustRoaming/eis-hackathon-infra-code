@@ -93,7 +93,7 @@ jobs:
 
     - name: Terraform Init
       working-directory: ./
-      run: terraform init -var-file=./environments/${{ github.event.inputs.env }}/terraform.tfvars -auto-approve
+      run: terraform init -backend-config=./environments/${{ github.event.inputs.env }}/backend.conf
 
     - name: Terraform Destroy
       working-directory: ./
