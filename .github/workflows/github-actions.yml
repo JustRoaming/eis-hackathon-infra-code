@@ -45,8 +45,7 @@ jobs:
         terraform_version: 1.8.4
 
     - name: Get Matrix Environment Location
-      #run: echo "./environments/${{ matrix.environment }}"
-      run: echo "${{ github.event.inputs.destroy }}"
+      run: echo "./environments/${{ matrix.environment }}"
 
     - name: ssh
       uses: webfactory/ssh-agent@v0.9.0
@@ -93,7 +92,9 @@ jobs:
         ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
 
     - name: Terraform Init
-      run: terraform init
+      working-directory: ./
+      run: terraform init -var-file=./environments/${{ github.event.inputs.env }}/terraform.tfvars -auto-approve
 
     - name: Terraform Destroy
-      run: terraform destroy -auto-approve
+      working-directory: ./
+      run: terraform destroy -var-file=./environments/${{ github.event.inputs.env }}/terraform.tfvars -auto-approve
