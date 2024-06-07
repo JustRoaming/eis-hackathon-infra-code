@@ -47,9 +47,12 @@ jobs:
       with:
         ssh-private-key: "${{ secrets.SSH_PRIVATE_KEY }}"
 
+    # - name: Terraform Init
+    #   working-directory: ./environments/${{ matrix.environment }}
+    #   run: terraform init -backend-config=backend.conf
     - name: Terraform Init
-      working-directory: ./environments/${{ matrix.environment }}
-      run: terraform init -backend-config=backend.conf
+      working-directory: ./
+      run: terraform init -backend-config=./environments/${{ matrix.environment }}/backend.conf
 
     - name: Terraform Plan
       if: github.ref != 'refs/heads/main'
@@ -58,8 +61,8 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main'
-      working-directory: ./environments/${{ matrix.environment }}
-      run: terraform apply -var-file=terraform.tfvars -auto-approve
+      working-directory: ./
+      run: terraform apply -var-file=./environments/${{ matrix.environment }}/terraform.tfvars -auto-approve
 
   destroy:
     name: 'Terraform Destroy'
